@@ -18,8 +18,8 @@ var (
 	// cgroups path name
 	name string
 
-	// Version release version
-	Version = "0.0.1"
+	// BuildTime build time
+	BuildTime = ""
 
 	// Commit will be overwritten automatically by the build system
 	Commit = "HEAD"
@@ -32,7 +32,7 @@ func init() {
 
 func main() {
 	flag.Parse()
-	fmt.Printf("%s@%s\n", Version, Commit)
+	fmt.Printf("%s@%s\n", BuildTime, Commit)
 	if exec == "" {
 		panic("missing command to be executed")
 	}
