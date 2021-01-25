@@ -13,10 +13,12 @@ $ GO111MODULE=off go build main.go
 
 ``` 
 
-- run command `./main -name=app -exec=./app`
+- run command `./main -name=simple_app -exec=./simple_app`
 
 ```
-$ ./main -name=app -exec=./app
+$ make app
+
+$ ./main -name=app -exec=./simple_app
 ```
 
 

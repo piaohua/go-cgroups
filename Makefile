@@ -1,4 +1,4 @@
-.PHONY: dev build install test clean
+.PHONY: dev build install test clean app
 
 GOOS=linux
 GOARCH=amd64
@@ -13,7 +13,7 @@ dev: build
 	@./main version
 
 build:
-	@go build -tags "cggo static_build" -installsuffix cggo \
+	@go build \
 		-ldflags "-w \
 		-X $(shell GO111MODULE=off go list)/BuildTime=$(BUILD_TIME) \
 		-X $(shell GO111MODULE=off go list)/Commit=$(COMMIT)" \
@@ -27,3 +27,7 @@ test:
 
 clean:
 	@git clean -f -d -X
+
+app:
+	@go build \
+		./simple_app.go
