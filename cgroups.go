@@ -61,7 +61,7 @@ func NewCGroup(path string) *CGroups {
 	if len(path) == 0 {
 		panic("Invalid cgroup path")
 	}
-	return new(CGroups)
+	return &CGroups{Path: path}
 }
 
 func (cg *CGroups) setCPU() error {
@@ -256,7 +256,13 @@ func subsystemIsMounted(subsystemRootName string) bool {
 	}
 
 	for _, subsystemInfo := range strings.Split(string(contentsBytes), "\n") {
-		if strings.Split(subsystemInfo, ":")[1] == subsystemRootName {
+		subFields := strings.Split(subsystemInfo, ":")
+		if len(subFields) < 2 {
+			continue
+		}
+		if subFields[1] == subsystemRootName ||
+			(subFields[1] == "cpuacct,cpu" &&
+				subsystemRootName == cpuName) {
 			return true
 		}
 	}
@@ -265,6 +271,9 @@ func subsystemIsMounted(subsystemRootName string) bool {
 }
 
 func getSubsystemPath(subsystemRootName, cgPath string) (string, error) {
+	if cgPath == "" {
+		return "", fmt.Errorf("Invalid cgPath")
+	}
 	rootMntPoint, err := getSubsystemMountPoint(subsystemRootName)
 	if err != nil {
 		return "", fmt.Errorf("failed to get root mountpoint of %s: %v",

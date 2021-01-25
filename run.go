@@ -20,6 +20,18 @@ func Run(command, path string) {
 
 	cg := NewCGroup(path)
 
+	if err := cg.parseCpuFlags(); err != nil {
+		panic(err)
+	}
+
+	if err := cg.parseCpusetFlags(); err != nil {
+		panic(err)
+	}
+
+	if err := cg.parseMemoryFlags(); err != nil {
+		panic(err)
+	}
+
 	if err := cg.setCPU(); err != nil {
 		panic(err)
 	}
