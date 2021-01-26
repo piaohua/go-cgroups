@@ -32,6 +32,10 @@ func Run(command, path string) {
 		panic(err)
 	}
 
+	if err := cg.parsePidsFlags(); err != nil {
+		panic(err)
+	}
+
 	if err := cg.setCPU(); err != nil {
 		panic(err)
 	}
@@ -107,15 +111,17 @@ func (cg *CGroups) startCmd(command string) {
 		signalChannel := make(chan os.Signal, 2)
 		signal.Notify(signalChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGCHLD)
 		go func(ctx context.Context) {
-			select {
-			case <-ctx.Done():
-				return
-			case sig := <-signalChannel:
-				switch sig {
-				case os.Interrupt, syscall.SIGTERM:
-					cmd.Process.Signal(sig)
-				case syscall.SIGCHLD:
-					//TODO handle SIGCHLD
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case sig := <-signalChannel:
+					switch sig {
+					case os.Interrupt, syscall.SIGTERM:
+						cmd.Process.Signal(sig)
+					case syscall.SIGCHLD:
+						//TODO handle SIGCHLD
+					}
 				}
 			}
 		}(ctx)

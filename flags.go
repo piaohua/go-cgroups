@@ -160,3 +160,9 @@ func (cg *CGroups) parseMemoryFlags() error {
 
 	return nil
 }
+
+func (cg *CGroups) parsePidsFlags() error {
+	cg.pidsMax = pidsMax
+
+	return nil
+}

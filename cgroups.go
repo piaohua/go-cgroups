@@ -198,6 +198,9 @@ func (cg *CGroups) setPids() error {
 	if err != nil {
 		return err
 	}
+	if cg.pidsMax == 0 {
+		return nil
+	}
 
 	var pidsFile string
 	var value []byte
