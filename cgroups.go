@@ -323,6 +323,9 @@ func getMemNodesNum() int {
 	confFile := path.Join(cpusetRoot, cpusetMemsName)
 
 	valueBytes, _ := ioutil.ReadFile(confFile)
+	if len(valueBytes) == 0 {
+		return 0
+	}
 	value := string(valueBytes[:len(valueBytes)-1])
 
 	re, _ := regexp.Compile(`^[\d,-]*(\d+)$`)

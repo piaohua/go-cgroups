@@ -9,10 +9,11 @@ import (
 	"os/exec"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 // Run a command in cgroups
-func Run(command, path string) {
+func Run(path, command string, arg ...string) {
 	if path == "" {
 		path = randomHash()
 	}
@@ -54,7 +55,7 @@ func Run(command, path string) {
 
 	//TODO defer cg remove
 
-	cg.startCmd(command)
+	cg.startCmd(command, arg...)
 }
 
 // randomHash creates random Length 64 hash
@@ -74,13 +75,11 @@ type exitStatus struct {
 	Code   int
 }
 
-func (cg *CGroups) startCmd(command string) {
+func (cg *CGroups) startCmd(command string, arg ...string) {
 	restart := make(chan exitStatus, 1)
 
 	runner := func() {
-		cmd := exec.Cmd{
-			Path: command,
-		}
+		cmd := exec.Command(command, arg...)
 		//cmd.SysProcAttr = &syscall.SysProcAttr{
 		//	Cloneflags: syscall.CLONE_NEWNS |
 		//		syscall.CLONE_NEWUTS |
@@ -98,7 +97,7 @@ func (cg *CGroups) startCmd(command string) {
 			panic(err)
 		}
 
-		fmt.Println("add pid", cmd.Process.Pid, "to file cgroup.procs")
+		fmt.Printf("add pid<%d> to file cgroup.procs\n", cmd.Process.Pid)
 
 		// set cgroup procs id
 		cg.Pid = cmd.Process.Pid
@@ -141,6 +140,7 @@ func (cg *CGroups) startCmd(command string) {
 		}
 
 		cmd.Process.Kill()
+		fmt.Printf("cmd<%s>, pid<%d> is killed by system\n", cmd, cg.Pid)
 
 		restart <- options
 	}
@@ -152,11 +152,12 @@ func (cg *CGroups) startCmd(command string) {
 
 		switch status.Signal {
 		case os.Kill:
-			fmt.Println("app is killed by system")
+			fmt.Printf("pid<%d> is killed by system\n", cg.Pid)
 		default:
-			fmt.Println("app exit with code:", status.Code)
+			fmt.Println("command<%s> exit with code:", command, status.Code)
 		}
 
+		time.Sleep(5 * time.Second)
 		fmt.Println("restart app..")
 
 		go runner()
